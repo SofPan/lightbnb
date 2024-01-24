@@ -1,14 +1,6 @@
-const properties = require("./json/properties.json");
-// const users = require("./json/users.json");
+const pg = require('./index');
 
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123',
-  host: 'localhost',
-  database: 'lightbnb'
-});
+const query = pg.query;
 
 /// Helpers
 const convertStringToNumber = (stringToConvert) => {
@@ -32,7 +24,7 @@ const convertDollarsToCents = (dollars) => {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = (email) => {
-  return pool.query(`SELECT * FROM users WHERE email = $1`, [email])
+  return query(`SELECT * FROM users WHERE email = $1`, [email])
     .then(res => res.rows[0] || null)
     .catch(err => console.log('getUserWithEmail error', err.message));
 };
@@ -43,7 +35,7 @@ const getUserWithEmail = (email) => {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = (id) => {
-  return pool.query(`SELECT * FROM users WHERE id = $1`, [id])
+  return query(`SELECT * FROM users WHERE id = $1`, [id])
     .then(res => res.rows[0] || null)
     .catch(err => console.log('getUserWithId error', err.message));
 };
@@ -60,7 +52,7 @@ const addUser = (user) => {
     RETURNING *;
   `;
   const values = [user.name, user.email, user.password];
-  return pool.query(queryStatement, values)
+  return query(queryStatement, values)
     .then(res => res.rows)
     .catch(err => console.log("addUser error", err.message));
 };
@@ -83,8 +75,7 @@ const getAllReservations = (guestId, limit = 10) => {
     LIMIT $2;
   `;
   const values = [guestId, limit];
-  return pool
-    .query(queryStatement, values)
+  return query(queryStatement, values)
     .then(res => res.rows)
     .catch(err => console.log('getAllReservations error:', err.message));
 };
@@ -142,7 +133,7 @@ const getAllProperties = (options, limit = 10) => {
     LIMIT $${queryParams.length};
   `;
 
-  return pool.query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then(res => res.rows)
     .catch(err => console.log("getAllProperties error:", err.message));
 };
@@ -183,10 +174,15 @@ const addProperty = (property) => {
     ) {
       property[prop] = convertStringToNumber(property[prop]);
     }
+
+    if (prop === "cost_per_night") {
+      property[prop] = convertDollarsToCents(convertStringToNumber(property[prop]));
+    }
+
     values.push(property[prop]);
   }
 
-  return pool.query(queryStatement, values)
+  return query(queryStatement, values)
     .then(res => res.rows)
     .catch(err => console.log("addProperty error", err.message));
 };
