@@ -1,5 +1,6 @@
 # LightBnB
 
+
 ## Project Structure
 
 ```
@@ -7,6 +8,7 @@
 ├── db
 │   ├── json
 │   └── database.js
+|   |__ index.js
 ├── public
 │   ├── javascript
 │   │   ├── components 
