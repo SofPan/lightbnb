@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS property_reviews CASCADE;
+DROP TABLE IF EXISTS guest_reviews CASCADE;
 DROP TABLE IF EXISTS reservations CASCADE;
+DROP TABLE IF EXISTS rates CASCADE;
 DROP TABLE IF EXISTS properties CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -32,12 +34,29 @@ CREATE TABLE properties(
   active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE rates(
+  id SERIAL PRIMARY KEY NOT NULL,
+  property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+  cost_per_night MONEY,
+  start_date DATE,
+  end_date DATE
+);
+
 CREATE TABLE reservations(
   id SERIAL PRIMARY KEY NOT NULL,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
   guest_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE guest_reviews(
+  id SERIAL PRIMARY KEY NOT NULL,
+  guest_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reservation_id INTEGER NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+  rating SMALLINT NOT NULL DEFAULT 0,
+  message TEXT
 );
 
 CREATE TABLE property_reviews(
